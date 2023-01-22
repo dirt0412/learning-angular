@@ -18,17 +18,6 @@ export class LearningComponent implements OnInit {
 
   ngOnInit() { }
   
-  private getTypLink(link: string): TypLink {
-	  return this.linkingData.reduce((previousValue: CustomerLink[], currentValue: CustomerLinkSect) => {
-		  if(currentValue.links) {
-			  previousValue.push(...currentValue.links);
-		  }
-		  return previousValue;
-	  }, []).find((customerLink: CustomerLink) => 
-			customerLink.link === link
-	  ).type;	  
-  }
-  
   public OpenModal() : void {
 	  combineLatest([
 		this.last1$,
@@ -44,9 +33,40 @@ export class LearningComponent implements OnInit {
 		});
   }
   
-  private watchValues(): void { this.control.valueChanges.pipe(startWith(this.control.value), takeUntil(this.destroyed$)).subscribe(() => {
+  public getUser(): Observable<User> {
+    return this.getCode().pipe(
+      switchMap((codeUser: CodeUser) => {
+        if (codeUser) {
+          return this.userService.getDataUser(codeUser.kod).pipe(
+            catchError(err => {
+              // return EMPTY;
+              return of(this.tempCodel);
+            })
+          );
+        }
+        return of(this.tempCodel);
+      })
+    );
+  }
+  
+  private getTypLink(link: string): TypLink {
+	  return this.linkingData.reduce((previousValue: CustomerLink[], currentValue: CustomerLinkSect) => {
+		  if(currentValue.links) {
+			  previousValue.push(...currentValue.links);
+		  }
+		  return previousValue;
+	  }, []).find((customerLink: CustomerLink) => 
+			customerLink.link === link
+	  ).type;	  
+  }
 
-  });
+  
+  private watchValues(): void { 
+	this.control.valueChanges
+		.pipe(startWith(this.control.value), takeUntil(this.destroyed$))
+		.subscribe(() => {
+
+		});
   }
 
 }
